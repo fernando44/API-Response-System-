@@ -44,7 +44,7 @@ def verificar_ip():
         estado = cert.get("ST", "N/A")
         pais = cert.get("C", "N/A")
 
-        alerta = "Inseguro" if inseguros > 2 else "Seguro"
+        alerta = "Inseguro" if inseguros > 3 else "Seguro"
         status_extra = ""
 
         if alerta == "Inseguro":

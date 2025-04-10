@@ -27,6 +27,15 @@ API_KEY = os.getenv("VT_API_KEY")
 if not API_KEY:
     raise Exception("A chave da API não foi definida. Por favor, defina a variável de ambiente VT_API_KEY.")
 
+@app.route('/logs')
+def logs():
+    try:
+        with open('app.log', 'r', encoding='utf-8') as f:
+            conteudo = f.read()
+        return conteudo, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    except Exception as e:
+        return f"Erro ao ler logs: {e}", 500
+
 # Rota simples de teste
 @app.route('/')
 def dashboard():
@@ -37,4 +46,4 @@ from routes.verificar_ip import verificar_ip_bp
 app.register_blueprint(verificar_ip_bp)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)

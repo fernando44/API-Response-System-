@@ -1,82 +1,68 @@
 # 🔒 API Response System
 
-Este projeto é uma API em Flask que consulta IPs na VirusTotal, classifica-os como seguros ou inseguros, e atualiza arquivos de whitelist e blacklist automaticamente.
+This project is a Flask-based API that queries IPs using VirusTotal, classifies them as safe or unsafe, and automatically updates the blacklist file.
 
-## 🚀 Funcionalidades
+## 🚀 Features
 
-- Consulta de IPs na API do VirusTotal
-- Classificação automática com base em detecções maliciosas e suspeitas
-- Atualização de arquivos `WhiteList.txt` e `blacklist.txt`
-- Suporte a múltiplos IPs em uma única requisição
-- Logging detalhado de requisições
-- Otimização com `ThreadPoolExecutor` para desempenho paralelo
+- IP query using the VirusTotal API  
+- Automatic classification based on malicious and suspicious detections  
+- Updates `blacklist.txt` automatically  
+- Supports multiple IPs in a single request  
+- Detailed logging  
+- Optimized with `ThreadPoolExecutor` for parallel performance  
 
-## 📁 Estrutura de Pastas
+## 📁 Project Structure
 
 ```
 .
-├── app.py                  # Ponto de entrada da aplicação Flask
-├── .env                   # Contém sua chave da API VirusTotal
-├── requirements.txt       # Dependências do projeto
-├── WhiteList.txt          # Lista de IPs permitidos
-├── blacklist.txt          # Lista de IPs maliciosos
-├── api/
-│   ├── __init__.py
-│   └── routes.py
+├── app.py                 # Flask application entry point
+├── .env                   # Contains your VirusTotal API key
+├── requirements.txt       # Project dependencies
+├── WhiteList.txt          # Allowed IP list
+├── blacklist.txt          # Malicious IP list
+├── routes/
+│   └── verificar_ip.py
 ├── services/
-│   └── virustotal_service.py
+│   └── virustotal.py
 ├── utils/
-│   ├── list_utils.py
+│   ├── listas.py
 │   └── logging_utils.py
 ```
 
-## ⚙️ Pré-requisitos
+## ⚙️ Prerequisites
 
 - Python 3.8+
-- Uma conta no [VirusTotal](https://virustotal.com) para obter sua API Key
+- A [VirusTotal](https://virustotal.com) account to obtain your API key
 
-## 🔧 Instalação
+## 🔧 Installation
 
-1. Clone o repositório:
+1. Clone the repository:
 
-```bash
-git clone https://github.com/seu-usuario/API-Response-System.git
-cd API-Response-System
-```
-
-2. Crie um ambiente virtual (opcional, mas recomendado):
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate   # Windows
-```
-
-3. Instale as dependências:
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Crie um arquivo `.env` com sua chave da API:
+3. Create a `.env` file with your API key:
 
 ```env
-VT_API_KEY=sua_chave_da_api_aqui
+VT_API_KEY=your_api_key_here
 ```
 
-## ▶️ Execução
+## ▶️ Running the API
 
 ```bash
-python app.py
+python3 app.py
 ```
 
-A API estará disponível em `http://localhost:5000`.
+The API will be available at `http://localhost:5000`.
 
-## 📡 Endpoints
+## 📡 IP Submission
 
 ### `POST /verificar_ip`
 
-**Corpo da requisição (JSON):**
+**Request body (JSON):**
 
 ```json
 {
@@ -84,7 +70,7 @@ A API estará disponível em `http://localhost:5000`.
 }
 ```
 
-**Resposta:**
+**Response:**
 
 ```json
 {
@@ -103,18 +89,13 @@ A API estará disponível em `http://localhost:5000`.
 }
 ```
 
-## 🧠 Observações
+## 🧠 Notes
 
-- IPs com mais de 2 detecções maliciosas ou suspeitas são considerados **inseguros**.
-- Esses IPs são adicionados à `blacklist.txt`, exceto se já estiverem na whitelist.
-- Logging é salvo no arquivo `app.log`.
+- IPs with more than 3 malicious or suspicious detections are classified as **unsafe**.  
+- Unsafe IPs are added to `blacklist.txt`, unless they are already in the whitelist or their managing organization is whitelisted.  
+- Logs are saved to `app.log` and generated for every POST interaction.
 
-## 🛠️ Futuras Melhorias
+## 🛠️ Future Improvements
 
-- Interface web para gestão de listas
-- Integração com firewalls automaticamente
-- Suporte a domínios além de IPs
-
-## 📄 Licença
-
-Este projeto é open-source, sinta-se à vontade para modificar e contribuir.
+- Web interface for submitting requests and viewing logs  
+- Automatic integration with firewalls

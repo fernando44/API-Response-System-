@@ -6,7 +6,7 @@ from utils.listas import verificar_listas, carregar_listas, adicionar_blacklist
 from datetime import datetime
 import os
 
-max_threads = int(os.getenv("MAX_THREADS", 10))
+max_threads = int(os.getenv("MAX_THREADS", 10))#quantidade de threads utilizadas
 
 verificar_ip_bp = Blueprint('verificar_ip', __name__)
 
@@ -54,9 +54,8 @@ def verificar_ip():
             if status_extra == "adicionado na blacklist":
                 adicionar_blacklist(ip)
 
-        # Log personalizado
         data_str = datetime.now().strftime("%d/%b/%Y %H:%M:%S")
-        log_msg = f"[{data_str}] IP: {ip} ({as_owner}) - {alerta} (Inseguros: {inseguros}, Seguros: {seguros})"
+        log_msg = f"[{data_str}] IP: {ip} ({as_owner}) - {alerta} (Inseguros: {inseguros}, Seguros: {seguros})"#criação do log customizado
         if status_extra:
             log_msg += f' {status_extra}'
         logging.info(log_msg)

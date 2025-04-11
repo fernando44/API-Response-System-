@@ -1,7 +1,7 @@
 import os
 
-WHITELIST_FILE = 'WhiteList.txt'
-BLACKLIST_FILE = 'blackips.txt'
+WHITELIST_FILE = 'WhiteList.txt'#whitelist name
+BLACKLIST_FILE = 'blackips.txt'#blacklist name
 
 def carregar_listas():
     whitelist = set()

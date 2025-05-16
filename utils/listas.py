@@ -23,10 +23,11 @@ def adicionar_blacklist(ip):
 
 def verificar_listas(ip, as_owner, whitelist, blacklist):
     if ip in whitelist:
-        return "esta na Whitelist"
+        return "Esta na Whitelist"
     elif as_owner in whitelist:
         return "Owner esta na Whitelist"
     elif ip in blacklist:
         return "Ja esta na blacklist"
     else:
-        return "adicionado na blacklist"
+        adicionar_blacklist(ip)
+        return "Adicionado na blacklist"

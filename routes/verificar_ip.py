@@ -45,19 +45,16 @@ def verificar_ip():
         pais = cert.get("C", "N/A")
 
         alerta = "Inseguro" if inseguros > 3 else "Seguro"
-        status_extra = ""
+        status_extra = "Seguro"
 
         if alerta == "Inseguro":
             whitelist, blacklist = carregar_listas()
             status_extra = verificar_listas(ip, as_owner, whitelist, blacklist)
 
-            if status_extra == "adicionado na blacklist":
-                adicionar_blacklist(ip)
-
         data_str = datetime.now().strftime("%d/%b/%Y %H:%M:%S")
         log_msg = f"[{data_str}] IP: {ip} ({as_owner}) - {alerta} (Inseguros: {inseguros}, Seguros: {seguros})"#criação do log customizado
         if status_extra:
-            log_msg += f' {status_extra}'
+            log_msg += f' {status_extra} Pais: {pais} Estado: {estado} Cidade: {cidade}'
         logging.info(log_msg)
 
         return {

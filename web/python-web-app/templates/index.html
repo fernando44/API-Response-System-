@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Check</title>
+  <link rel="icon" href="static/icone.png" type="image/png">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>SOC Check</h2>
+    <div class="stats">
+      <span>Total analisados nas últimas <span id="horas">24 horas: <span id="total">0</span></span></span>
+      <span>Maliciosos: <span id="maliciosos">0</span></span>
+      <span>Não maliciosos: <span id="seguros">0</span></span>
+    </div>
+    <form id="formulario">
+      <label for="ips">Digite os IPs para consulta:</label><br>
+      <textarea id="ips" name="ips"></textarea><br>
+      <button type="submit">Verificar</button>
+    </form>
+    <div class="resultado" id="resultado"></div>
+    <div class="log-viewer" id="logViewer">Carregando logs...</div>
+  </div>
+
+  <script>
+    let intervaloHoras = 24;
+
+    async function carregarLogs() {
+      try {
+        const resposta = await fetch('/logs');
+        const texto = await resposta.text();
+        const linhas = texto.trim().split('\n');
+
+        let total = 0;
+        let maliciosos = 0;
+        const agora = new Date();
+
+        const linhasFiltradas = linhas.filter(linha => {
+          const match = linha.match(/\[(\d{2})\/(\w{3})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})\]/);
+          if (!match) return false;
+
+          const [ , dia, mesAbrev, ano, hora, minuto, segundo ] = match;
+          const meses = {
+            Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+            Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+          };
+
+          const dataLinha = new Date(ano, meses[mesAbrev], dia, hora, minuto, segundo);
+          const diffMs = agora - dataLinha;
+          return diffMs <= intervaloHoras * 60 * 60 * 1000;
+        });
+
+        linhasFiltradas.forEach(linha => {
+          if (linha.includes('IP:')) {
+            total++;
+            if (/ - Inseguro /.test(linha)) {
+              maliciosos++;
+            }
+          }
+        });
+
+        const seguros = total - maliciosos;
+        const ultimas30 = linhas.slice(-30);
+
+        document.getElementById('total').textContent = total;
+        document.getElementById('maliciosos').textContent = maliciosos;
+        document.getElementById('seguros').textContent = seguros;
+
+        const formatado = ultimas30.join('\n').replace(/IP: (.*?) \((.*?)\) - (Seguro|Inseguro) \((.*?)\)(.*)?/gi, (_, ip, owner, status, resto, extra) => {
+          const statusClass = status.toLowerCase() === 'inseguro' ? 'inseguro' : 'seguro';
+          let linha = `<span class="ip">IP: ${ip}</span> <span class="owner">(${owner})</span> - <span class="status ${statusClass}">${status}</span> <span class="resto">(${resto})</span>`;
+          if (extra) {
+            linha += `<span class="extra-status">${extra}</span>`;
+          }
+          return linha;
+        });
+
+        document.getElementById('logViewer').innerHTML = formatado;
+      } catch (e) {
+        document.getElementById('logViewer').innerText = 'Erro ao carregar logs';
+      }
+    }
+
+    carregarLogs();
+    setInterval(carregarLogs, 15000);
+
+    document.getElementById('formulario').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const ipsText = document.getElementById('ips').value;
+      const ipArray = ipsText.trim().split(/\s+/);
+
+      const resposta = await fetch('/verificar_ip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ips: ipArray })
+      });
+
+      const dados = await resposta.json();
+      const container = document.getElementById('resultado');
+      container.innerHTML = '';
+
+      if (dados.resultados && dados.resultados.length > 0) {
+        dados.resultados.forEach(item => {
+          const card = document.createElement('div');
+          const isSeguro = item.alerta === 'Seguro';
+          card.className = 'card ' + (isSeguro ? 'seguro' : 'inseguro');
+
+          card.innerHTML = isSeguro ? `
+            <h4>Falso positivo, IP não foi identificado como malicioso.</h4>
+            <p><strong>IP:</strong> ${item.ip}</p>
+            <p><strong>Gerenciado por:</strong> ${item["Gerenciado por"]}</p>
+            <p><strong>País:</strong> ${item.pais}</p>
+            <p><strong>Estado:</strong> ${item.estado}</p>
+            <p><strong>Cidade:</strong> ${item.cidade}</p>
+          ` : `
+            <h4>IP foi classificado em ${item.Inseguros} locais como malicioso, o IP ${item.ip} foi adicionado em nossa black list para o bloqueio.</h4>
+            <p><strong>Gerenciado por:</strong> ${item["Gerenciado por"]}</p>
+            <p><strong>País:</strong> ${item.pais}</p>
+            <p><strong>Estado:</strong> ${item.estado}</p>
+            <p><strong>Cidade:</strong> ${item.cidade}</p>
+          `;
+
+          container.appendChild(card);
+        });
+      } else {
+        container.innerText = 'Nenhum resultado encontrado.';
+      }
+
+      carregarLogs();
+    });
+  </script>
+</body>
+</html>

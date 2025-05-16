@@ -54,7 +54,7 @@ def verificar_ip():
         data_str = datetime.now().strftime("%d/%b/%Y %H:%M:%S")
         log_msg = f"[{data_str}] IP: {ip} ({as_owner}) - {alerta} (Inseguros: {inseguros}, Seguros: {seguros})"#criação do log customizado
         if status_extra:
-            log_msg += f' {status_extra} Pais: {pais} Estado: {estado} Cidade: {cidade}'
+            log_msg += f' Pais: {pais} Estado: {estado} Cidade: {cidade} - {status_extra}'
         logging.info(log_msg)
 
         return {
